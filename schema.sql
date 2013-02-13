@@ -1,0 +1,25 @@
+DROP TABLE IF EXISTS `usage_stats`;
+CREATE TABLE `usage_stats` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `pokemon` varchar(100) NOT NULL,
+  `usage` double NOT NULL,
+  `ability1` varchar(50) NOT NULL,
+  `ability1percent` double NOT NULL,
+  `ability2` varchar(50) DEFAULT NULL,
+  `ability2percent` double DEFAULT NULL,
+  `ability3` varchar(50) DEFAULT NULL,
+  `ability3percent` double DEFAULT NULL,
+  `item` varchar(50) NOT NULL,
+  `nature` varchar(50) NOT NULL,
+  `move1` varchar(50) NOT NULL,
+  `move2` varchar(50) NOT NULL,
+  `move3` varchar(50) NOT NULL,
+  `move4` varchar(50) NOT NULL,
+  `hp` int(11) NOT NULL,
+  `atk` int(11) NOT NULL,
+  `def` int(11) NOT NULL,
+  `spa` int(11) NOT NULL,
+  `spd` int(11) NOT NULL,
+  `spe` int(11) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
