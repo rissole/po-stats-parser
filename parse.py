@@ -88,7 +88,7 @@ index = urllib.urlopen(baseURL+"index.html").read()
 index = BeautifulSoup(index)
 
 f = open("output.sql","w")
-for pokeTag in index.find_all('p', class_=re.compile("Pokemon$"), limit=10):
+for pokeTag in index.find_all('p', class_=re.compile("Pokemon$"), limit=20):
 	link, name = pokeTag.find('a')['href'],pokeTag.find('a').get_text()
 	print "Getting "+name+"..."
 	page = BeautifulSoup(urllib.urlopen(baseURL+link).read())
