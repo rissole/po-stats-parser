@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup
 import re
-import urllib
+from urllib2 import urlopen
 
 def parsePage(soup):
 	pokeObjs = []
@@ -72,26 +72,27 @@ def parsePage(soup):
 def pokeObjToSql(pokeObj):
 	abilitiesPadded = pokeObj['abilities']
 	while (len(abilitiesPadded) < 3):
-		abilitiesPadded.append(('null','null'))
-	st = pokeObj['evs']
-	ab = pokeObj['abilities']
-	mv = pokeObj['moves']
-	query = "INSERT INTO usage_stats (pokemon,usage,ability1,ability1percent,ability2,ability2percent,ability3,ability3percent,item,nature,move1,move2,move3,move4,hp,atk,def,spa,spd,spe) VALUES "
-	query += "('{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}');".format(
-		pokeObj['name'],pokeObj['usage'],ab[0][0],ab[0][1],ab[1][0],ab[1][1],ab[2][0],ab[2][1],pokeObj['item'],pokeObj['nature'],mv[0],mv[1],
-		mv[2],mv[3],st['hp'],st['atk'],st['def'],st['spa'],st['spd'],st['spe']
-	).replace("'null'","null")
+		abilitiesPadded.append(('NULL','NULL'))
+	st, ab, mv = pokeObj['evs'], pokeObj['abilities'], pokeObj['moves']
+	query = "INSERT INTO usage_stats (pokemon,usage,ability1,ability1percent,ability2,ability2percent,ability3,ability3percent,item,nature,move1,move2,move3,move4,hp,atk,def,spa,spd,spe)"
+	attributes = [pokeObj['name'], pokeObj['usage'],
+		ab[0][0], ab[0][1], ab[1][0], ab[1][1], ab[2][0], ab[2][1],
+		pokeObj['item'], pokeObj['nature'],
+		mv[0], mv[1], mv[2], mv[3],
+		st['hp'], st['atk'], st['def'], st['spa'], st['spd'] ,st['spe']]
+	raw_row = ','.join(("'%s'" % attr for attr in attributes)).replace("'NULL'", 'NULL')
+	query += '\n\t\tVALUES ({row});\n'.format(row=raw_row)
 	return query
 	
 baseURL = "http://stats.pokemon-online.eu/Wifi%20OU/"
-index = urllib.urlopen(baseURL+"index.html").read()
-index = BeautifulSoup(index)
+soup = BeautifulSoup(urlopen(baseURL+"index.html"))
 
-f = open("output.sql","w")
-for pokeTag in index.find_all('p', class_=re.compile("Pokemon$"), limit=20):
-	link, name = pokeTag.find('a')['href'],pokeTag.find('a').get_text()
-	print "Getting "+name+"..."
-	page = BeautifulSoup(urllib.urlopen(baseURL+link).read())
-	pokeObjs = parsePage(page)
-	for po in pokeObjs:
-		f.write(pokeObjToSql(po)+"\n")
+with open("output.sql","w") as f:
+	for pokeTag in soup.find_all('p', class_=re.compile("Pokemon$"), limit=20):
+		tag = pokeTag.find('a')
+		link, name = tag['href'], tag.get_text()
+		print "Getting {name}...".format(name=name)
+		page = BeautifulSoup(urlopen(baseURL+link))
+		pokeObjs = parsePage(page)
+		for po in pokeObjs:
+			f.write(pokeObjToSql(po))
